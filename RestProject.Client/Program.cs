@@ -1,4 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using static System.Net.WebRequestMethods;
 
@@ -15,6 +16,44 @@ namespace RestProject.Client
 
             client.BaseAddress = new Uri(endpoint);
 
+            //await FirstPartOfProtject(client);
+
+            var newPerson = new Person
+            {
+                Name = "Jan",
+                Surname = "Kowalski",
+                Function = "Programmer"
+            };
+            var juan = new Person
+            {
+                Name = "Juan",
+                Surname = "Perez",
+                Function = "Programmer"
+            };
+            var newTask = new Tasks
+            {
+                Title = "New task",
+                Handler = newPerson
+            };
+            var newTask2 = new Tasks
+            {
+                Title = "New task 2",
+                Handler = juan
+            };
+            var response = await client.PostAsJsonAsync("http://localhost:8080/RestProject/webapi/tasks", newTask);
+            Console.WriteLine(response);
+            response.EnsureSuccessStatusCode();
+            
+            response = await client.PostAsJsonAsync("http://localhost:8080/RestProject/webapi/tasks", newTask2);
+            Console.WriteLine(response);
+
+            var allItems = await client.GetStringAsync("http://localhost:8080/RestProject/webapi/tasks");
+            var item = await client.GetStringAsync("http://localhost:8080/RestProject/webapi/tasks/1");
+
+        }
+
+        private static async Task FirstPartOfProtject(HttpClient client)
+        {
             Console.WriteLine("Choose a method: GET, POST, PUT, DELETE");
             var httpMethod = Console.ReadLine();
 
@@ -24,7 +63,7 @@ namespace RestProject.Client
                 string httpResult = httpMethod switch
                 {
                     "get" => await httpRequester.GetAsync(GetContent("endpoint")),
-                    "post" => await httpRequester.GetAsync(GetContent("endpoint")),
+                    "post" => await httpRequester.PostAsync(GetContent("endpoint"), GetContent("content")),
                     "put" => await httpRequester.PutAsync(GetContent("endpoint"),
                                                           GetContent("content")),
                     _ => "No method specified",
@@ -34,7 +73,6 @@ namespace RestProject.Client
                 Console.WriteLine("Choose a method: GET, POST, PUT, DELETE");
                 httpMethod = Console.ReadLine();
             } while (httpMethod is not null && httpMethod != "");
-
         }
 
         private static string GetContent(string typeOfContent)
